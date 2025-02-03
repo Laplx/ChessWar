@@ -14,7 +14,6 @@ async def show_message(screen, message):
     await asyncio.sleep(1)
 
 async def introduce():
-    """显示游戏规则介绍"""
     txt = '''CHESS WAR rules
     
 (1) Each piece can move once and attack once, in any order.
@@ -29,6 +28,7 @@ async def introduce():
     - Rook can attack the first piece along its straight lines.
     - Bishop can heal the first piece along its diagonal lines.
     - Knight can attack all squares in 2*2 distance except (+-2,+-2).
+      When it is blocked by 1 distance the 3 behind can't be attacked.
 (5) Haelth and attack list:
     - HP: K 100, Q 24, P 15, B 36, N 24, R 12
     - AD: K 10, Q 100, P 5, B -4, N 7, R 4
@@ -65,7 +65,6 @@ async def introduce():
     return True
 
 async def handle_events():
-    """处理游戏事件"""
     global running, pieces, chess_board, intro_button_rect, done_button_rect, pawn_rect, rook_rect, knight_rect, bishop_rect, queen_rect, show_intro, wanted_piece_type, selected_piece, selected_position, moved, attacked
 
     events = pygame.event.get()
@@ -165,7 +164,6 @@ running = True
 show_intro = False
 
 async def main():
-    """主游戏循环"""
     global running, show_intro, pieces, screen, font, chess_board, intro_button_rect, done_button_rect, pawn_rect, rook_rect, knight_rect, bishop_rect, queen_rect, wanted_piece_type, selected_piece, moved, attacked, selected_position
     
     pygame.init()

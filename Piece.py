@@ -107,7 +107,7 @@ class Rook(Piece):
                 if board[new_row][new_col] is not None:
                     break
                 moves.append((new_row, new_col))
-        for dr in range(-1, - size + 1, -1):
+        for dr in range(-1, - size, -1):
             new_row, new_col = row + dr, col
             self.flag_neg_r = dr
             if 0 <= new_row < 8 and 0 <= new_col < 8:
@@ -121,7 +121,7 @@ class Rook(Piece):
                 if board[new_row][new_col] is not None:
                     break
                 moves.append((new_row, new_col))
-        for dc in range(-1, - size + 1, -1):
+        for dc in range(-1, - size, -1):
             new_row, new_col = row, col + dc
             self.flag_neg_c = dc
             if 0 <= new_row < 8 and 0 <= new_col < 8:
@@ -165,9 +165,12 @@ class Knight(Piece):
         for blocker, blockees in group:
             dr, dc = blocker
             new_row, new_col = row + dr, col + dc
+            new_blockees = []
+            for dr, dc in blockees:
+                new_blockees.append((row + dr, col + dc))
             if 0 <= new_row < 8 and 0 <= new_col < 8:
                 if board[new_row][new_col] is not None:
-                    attackees = [_ for _ in attackees if _ not in blockees]
+                    attackees = [_ for _ in attackees if _ not in new_blockees]
         return attackees
      
 class Bishop(Piece):
@@ -186,7 +189,7 @@ class Bishop(Piece):
                 if board[new_row][new_col] is not None:
                     break
                 moves.append((new_row, new_col))
-        for dr in range(-1, - size + 1, -1):
+        for dr in range(-1, - size, -1):
             new_row, new_col = row + dr, col - dr
             self.flag_neg_r = dr
             if 0 <= new_row < 8 and 0 <= new_col < 8:
@@ -200,7 +203,7 @@ class Bishop(Piece):
                 if board[new_row][new_col] is not None:
                     break
                 moves.append((new_row, new_col))
-        for dc in range(-1, - size + 1, -1):
+        for dc in range(-1, - size, -1):
             new_row, new_col = row + dc, col + dc
             self.flag_neg_c = dc
             if 0 <= new_row < 8 and 0 <= new_col < 8:
