@@ -1,3 +1,4 @@
+import asyncio, sys
 import pygame
 import Board, Piece
 
@@ -61,7 +62,7 @@ def introduce():
     return True
 
 
-def main():
+async def main():
     global running, show_intro, pieces, screen, font
     
     pygame.init()
@@ -215,9 +216,11 @@ def main():
                         
         pygame.display.flip()
         clock.tick(60)
+        await asyncio.sleep(0)
     
     pygame.quit()
+    sys.exit()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
