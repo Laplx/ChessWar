@@ -3,16 +3,16 @@ import pygame
 import Board, Piece
 
 
-def show_message(screen, message):
+async def show_message(screen, message):
     text_surface = font.render(message, True, (255, 255, 255))
     text_rect = text_surface.get_rect()
     text_rect.center = (screen.get_width() // 2, screen.get_height() // 2)
     pygame.draw.rect(screen, (0, 0, 0), (text_rect.left - 10, text_rect.top - 10, text_rect.width + 20, text_rect.height + 20))
     screen.blit(text_surface, text_rect)
     pygame.display.update()
-    pygame.time.delay(1000)
-    
-def introduce():
+    await asyncio.sleep(1)
+
+async def introduce():
     txt = '''CHESS WAR rules
     
 (1) Each piece can move once and attack once, in any order.
@@ -58,6 +58,7 @@ def introduce():
         screen.blit(button_text, (button_rect.x + 30, button_rect.y + 10))
             
         pygame.display.update()
+        await asyncio.sleep(0)
         
     return True
 
