@@ -1,9 +1,10 @@
-import asyncio, sys
+import asyncio
+import sys
 import pygame
 import Board, Piece
 
-
 async def show_message(screen, message):
+    """显示消息到屏幕上"""
     text_surface = font.render(message, True, (255, 255, 255))
     text_rect = text_surface.get_rect()
     text_rect.center = (screen.get_width() // 2, screen.get_height() // 2)
@@ -13,6 +14,7 @@ async def show_message(screen, message):
     await asyncio.sleep(1)
 
 async def introduce():
+    """显示游戏规则介绍"""
     txt = '''CHESS WAR rules
     
 (1) Each piece can move once and attack once, in any order.
@@ -62,9 +64,109 @@ async def introduce():
         
     return True
 
+async def handle_events():
+    """处理游戏事件"""
+    global running, pieces, chess_board, intro_button_rect, done_button_rect, pawn_rect, rook_rect, knight_rect, bishop_rect, queen_rect, show_intro, wanted_piece_type, selected_piece, selected_position, moved, attacked
+
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN and not show_intro:
+            mouse_x, mouse_y = event.pos
+            col = mouse_x // 80
+            row = mouse_y // 80
+            
+            if intro_button_rect.collidepoint(event.pos):
+                show_intro = True
+                await introduce()
+                show_intro = False
+                break
+            elif done_button_rect.collidepoint(event.pos):
+                chess_board.playing_color = 1 - chess_board.playing_color
+                chess_board.tokens[0] += 1
+                chess_board.tokens[1] += 1
+                moved = []
+                attacked = []
+                selected_piece = None
+                selected_position = None
+                wanted_piece_type = None
+                break
+            
+            if pawn_rect.collidepoint(event.pos):
+                wanted_piece_type = "Pawn"
+                break
+            elif rook_rect.collidepoint(event.pos):
+                wanted_piece_type = "Rook"
+                break
+            elif knight_rect.collidepoint(event.pos):
+                wanted_piece_type = "Knight"
+                break
+            elif bishop_rect.collidepoint(event.pos):
+                wanted_piece_type = "Bishop"
+                break
+            elif queen_rect.collidepoint(event.pos):
+                wanted_piece_type = "Queen"
+                break
+            
+            if wanted_piece_type is not None:
+                if chess_board.buy(wanted_piece_type, row, col):
+                    wanted_piece_type = None                        
+                else:
+                    await show_message(screen, 'Not Allowed')
+                    wanted_piece_type = None     
+                break
+            
+            if selected_piece is None:
+                selected_piece = chess_board.board[row][col]
+                selected_position = (row, col)         
+            elif selected_piece.color == chess_board.playing_color:
+                # up to one move and one attack, whichever is first
+                if selected_position not in moved and selected_piece != None:
+                    if chess_board.move(selected_position[0], selected_position[1], row, col):
+                        moved.append((row, col))
+                        if selected_position in attacked:
+                            attacked.remove(selected_position)
+                            attacked.append((row, col))
+                        selected_piece = None
+                        selected_position = None
+                            
+                if selected_position not in attacked and selected_piece != None:
+                    if chess_board.attack(selected_position[0], selected_position[1], row, col):
+                        attacked.append(selected_position)
+                        selected_piece = None
+                        selected_position = None
+                        
+                        kings = [king for one_row in chess_board.board for king in one_row if isinstance(king, Piece.King)]
+                        if len(kings) == 1:
+                            running = False
+                            winner = 'White Win' if kings[0].color == 0 else 'Black Win'
+                            await show_message(screen, winner)
+                                
+                if selected_piece != None:
+                    selected_piece = None
+                    selected_position = None
+                    await show_message(screen, 'Not Allowed')
+            else:
+                selected_piece = None
+                selected_position = None
+                await show_message(screen, 'Not Allowed')
+    return True
+
+
+wanted_piece_type = None
+selected_piece = None
+moved = []
+attacked = []
+    
+chess_board = Board.ChessBoard()
+
+running = True
+show_intro = False
 
 async def main():
-    global running, show_intro, pieces, screen, font
+    """主游戏循环"""
+    global running, show_intro, pieces, screen, font, chess_board, intro_button_rect, done_button_rect, pawn_rect, rook_rect, knight_rect, bishop_rect, queen_rect, wanted_piece_type, selected_piece, moved, attacked, selected_position
     
     pygame.init()
     font = pygame.font.SysFont("arial", 20)
@@ -72,7 +174,6 @@ async def main():
     clock = pygame.time.Clock()
     
     intro_button_text = font.render("Info", True, (255, 255, 255))
-    # done_button_text see below
     pawn_text = font.render("Pawn$2", True, (0, 0, 0))
     rook_text = font.render("Rook$3", True, (0, 0, 0))
     knight_text = font.render("Knight$3", True, (0, 0, 0))
@@ -90,103 +191,11 @@ async def main():
     pieces = {}
     for piece_type in ['Pawn', 'Rook', 'Knight', 'Bishop', 'Queen', 'King']:         
         pieces[piece_type] = [pygame.transform.scale(pygame.image.load(f'assets/{piece_type}{color}.png'), (80, 80)) for color in [0, 1]]
-    
-    chess_board = Board.ChessBoard()
-    
-    wanted_piece_type = None
-    selected_piece = None
-    moved = []
-    attacked = []
-    
-    running = True
-    show_intro = False
+
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and not show_intro:
-                mouse_x, mouse_y = event.pos
-                col = mouse_x // 80
-                row = mouse_y // 80
-                
-                
-                if intro_button_rect.collidepoint(event.pos):
-                    show_intro = True
-                    introduce()
-                    show_intro = False
-                    break
-                elif done_button_rect.collidepoint(event.pos):
-                    chess_board.playing_color = 1 - chess_board.playing_color
-                    chess_board.tokens[0] += 1
-                    chess_board.tokens[1] += 1
-                    moved = []
-                    attacked = []
-                    selected_piece = None
-                    selected_position = None
-                    wanted_piece_type = None
-                    break
-                
-                if pawn_rect.collidepoint(event.pos):
-                    wanted_piece_type = "Pawn"
-                    break
-                elif rook_rect.collidepoint(event.pos):
-                    wanted_piece_type = "Rook"
-                    break
-                elif knight_rect.collidepoint(event.pos):
-                    wanted_piece_type = "Knight"
-                    break
-                elif bishop_rect.collidepoint(event.pos):
-                    wanted_piece_type = "Bishop"
-                    break
-                elif queen_rect.collidepoint(event.pos):
-                    wanted_piece_type = "Queen"
-                    break
-                
-                if wanted_piece_type is not None:
-                    if chess_board.buy(wanted_piece_type, row, col):
-                        wanted_piece_type = None                        
-                    else:
-                        show_message(screen, 'Not Allowed')
-                        wanted_piece_type = None     
-                    break
-                
-                
-                if selected_piece is None:
-                    selected_piece = chess_board.board[row][col]
-                    selected_position = (row, col)         
-                elif selected_piece.color == chess_board.playing_color:
-                    # up to one move and one attack, whichever is first
-                    if selected_position not in moved and selected_piece != None:
-                        if chess_board.move(selected_position[0], selected_position[1], row, col):
-                            moved.append((row, col))
-                            if selected_position in attacked:
-                                attacked.remove(selected_position)
-                                attacked.append((row, col))
-                            selected_piece = None
-                            selected_position = None
-                            
-                            
-                    if selected_position not in attacked and selected_piece != None:
-                        if chess_board.attack(selected_position[0], selected_position[1], row, col):
-                            attacked.append(selected_position)
-                            selected_piece = None
-                            selected_position = None
-                            
-                            kings = [king for one_row in chess_board.board for king in one_row if isinstance(king, Piece.King)]
-                            if len(kings) == 1:
-                                running = False
-                                winner = 'White Win' if kings[0].color == 0 else 'Black Win'
-                                show_message(screen, winner)
-                                
-                    if selected_piece != None:
-                        selected_piece = None
-                        selected_position = None
-                        show_message(screen, 'Not Allowed')
-                else:
-                    selected_piece = None
-                    selected_position = None
-                    show_message(screen, 'Not Allowed')
-        
+        events_processed = await handle_events()
+        if not events_processed:
+            running = False
                     
         screen.fill((255, 255, 255))
         chess_board.draw(pieces, screen, font)
@@ -216,12 +225,11 @@ async def main():
         screen.blit(queen_text, (queen_rect.x + 20, queen_rect.y + 120))
                         
         pygame.display.flip()
-        clock.tick(60)
         await asyncio.sleep(0)
+        clock.tick(60)
     
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
