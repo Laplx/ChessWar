@@ -169,7 +169,7 @@ async def main():
     global running, show_intro, pieces, screen, font, chess_board, intro_button_rect, done_button_rect, pawn_rect, rook_rect, knight_rect, bishop_rect, queen_rect, wanted_piece_type, selected_piece, moved, attacked, selected_position
     
     pygame.init()
-    font = pygame.font.SysFont("arial", 20)
+    font = pygame.font.Font("arial", 15)
     screen = pygame.display.set_mode((640, 800))
     clock = pygame.time.Clock()
     
