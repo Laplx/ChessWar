@@ -65,7 +65,7 @@ class Queen(Piece):
     def __init__(self, color):
         super().__init__(color)
         self.hp = 24
-        self.ad = 100
+        self.ad = 20
         self.move_directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         self.attack_directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         

@@ -31,7 +31,7 @@ async def introduce():
       When it is blocked by 1 distance the 3 behind can't be attacked.
 (5) Haelth and attack list:
     - HP: K 100, Q 24, P 15, B 36, N 24, R 12
-    - AD: K 10, Q 100, P 5, B -4, N 7, R 4
+    - AD: K 10, Q 20, P 5, B -4, N 7, R 4
     '''
     
     background_color = (255, 255, 255)
